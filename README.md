@@ -210,10 +210,28 @@ There are currently the following built-in modifiers:
 - `@join`: Joins multiple objects into a single object.
 - `@keys`: Returns an array of keys for an object.
 - `@values`: Returns an array of values for an object.
+- `@withKey`: Copies each object's key into the nested object under `_key`.
 - `@tostr`: Converts json to a string. Wraps a json string.
 - `@fromstr`: Converts a string from json. Unwraps a json string.
 - `@group`: Groups arrays of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
 - `@dig`: Search for a value without providing its entire path. See [e8e87f2](https://github.com/tidwall/gjson/commit/e8e87f2a00dc41f3aba5631094e21f59a8cf8cbf).
+
+Use `@withKey` when you need the original keys available inside child objects. Given
+
+```json
+{
+  "tickets": {
+    "ISSUE-10": {"subject": "foo", "priority": 1, "id": 123},
+    "ISSUE-12": {"subject": "bar", "priority": 3, "id": 124}
+  }
+}
+```
+
+you can promote the keys alongside the values:
+
+```
+"tickets|@withKey|@values|0" >> {"subject":"foo","priority":1,"id":123,"_key":"ISSUE-10"}
+```
 
 ### Modifier arguments
 

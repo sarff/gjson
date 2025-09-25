@@ -2932,6 +2932,7 @@ func init() {
 		"fromstr": modFromStr,
 		"group":   modGroup,
 		"dig":     modDig,
+		"withKey": modWithKey,
 	}
 }
 
@@ -3606,4 +3607,48 @@ func modDig(json, arg string) string {
 	}
 	out = append(out, ']')
 	return string(out)
+}
+
+// @withKey clones child objects while recording their parent key in "_key".
+//
+//	{"Tom Smith": { "height": 170 ,"weight": 80} }
+//		-> {"Tom Smith": {"height": 170 ,"weight": 80, "_key": "Tom Smith"}}
+func modWithKey(json, _ string) string {
+	v := Parse(json)
+	if !v.Exists() {
+		return "{}"
+	}
+	if v.IsArray() {
+		return json
+	}
+	var out strings.Builder
+	out.WriteByte('{')
+
+	var i int
+	v.ForEach(func(rootKey, rootValue Result) bool {
+		if i > 0 {
+			out.WriteByte(',')
+		}
+		out.WriteString(rootKey.Raw)
+		out.WriteString(":")
+		if rootValue.IsObject() {
+			out.WriteByte('{')
+			rootValue.ForEach(func(childKey, childValue Result) bool {
+				out.WriteString(childKey.Raw)
+				out.WriteString(":")
+				out.WriteString(childValue.Raw)
+				out.WriteByte(',')
+				return true
+			})
+			out.WriteString("\"_key\":")
+			out.WriteString(rootKey.Raw)
+			out.WriteByte('}')
+		} else {
+			out.WriteString(rootValue.Raw)
+		}
+		i++
+		return true
+	})
+	out.WriteByte('}')
+	return out.String()
 }
