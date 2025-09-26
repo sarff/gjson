@@ -255,6 +255,7 @@ There are currently the following built-in modifiers:
 - `@join`: Joins multiple objects into a single object.
 - `@keys`: Returns an array of keys for an object.
 - `@values`: Returns an array of values for an object.
+- `@withKey`: Copies each object's key into the nested object under `_key`.
 - `@tostr`: Converts json to a string. Wraps a json string.
 - `@fromstr`: Converts a string from json. Unwraps a json string.
 - `@group`: Groups arrays of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
@@ -358,3 +359,39 @@ This results in
 ```
 
 *See issue [#249](https://github.com/tidwall/gjson/issues/249) for additional context on JSON Literals.*
+
+
+### withKey example
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/sarff/gjson"
+)
+
+func main() {
+	jsonData := []byte(`{
+	  "usdc": {
+		"amount": 15.321011,
+		"pendingAmount": 0
+	  },
+	  "usdterc20": {
+		"amount": 3.257136,
+		"pendingAmount": 0
+	  },
+	  "usdttrc20": {
+		"amount": 56.130931,
+		"pendingAmount": 0
+	  }
+	}`)
+
+	values := gjson.GetBytes(jsonData, "@withKey.@values.#.amount").Array()
+
+	fmt.Println("Balances:", values)
+}
+```
+```
+Balances: [15.321011 3.257136 56.130931]
+```
